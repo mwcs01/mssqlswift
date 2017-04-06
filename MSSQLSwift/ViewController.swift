@@ -8,18 +8,29 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-
+class ViewController: UIViewController, SQLClientDelegate {
+    
+    // Handles errors from the SQLClient
+    func error(_ error: String!, code: Int32, severity: Int32) {
+        print("\(error!) \(code) \(severity)")
+    }
+    
+    //MARK: Lifecyle
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        let client = SQLClient.sharedInstance()!
+        client.delegate = self
+        client.connect("ServerNameOrIP", username: "cool", password: "cool", database: "database") { success in
+            client.execute("SELECT * FROM table", completion: { (_ results: ([Any]?)) in
+                for table in results as! [[[String:AnyObject]]] {
+                    for row in table {
+                        for (columnName, value) in row {
+                            print("\(columnName) = \(value)")
+                        }
+                    }
+                }
+                client.disconnect()
+            })
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-
 }
-
